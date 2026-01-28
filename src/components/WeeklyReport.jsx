@@ -3,7 +3,8 @@ import { format, getWeek, getYear } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { generateWeeklyReportData, analyzeTrend } from '../services/analytics';
 import { generateWeeklyInsight } from '../services/claude';
-import { getWeeklyReportCache, saveWeeklyReportCache } from '../services/storage';
+import { getWeeklyReportCache, saveReportCache } from '../services/firebase/firestore';
+import { auth } from '../services/firebase/config';
 import { LineChartComponent } from './Chart';
 import './WeeklyReport.css';
 
@@ -22,13 +23,17 @@ export default function WeeklyReport() {
   }, [date]);
 
   const loadReport = async () => {
+    if (!auth.currentUser) return;
+
     setLoading(true);
     setError(null);
     setGenerationTime(null);
 
     try {
+      const userId = auth.currentUser.uid;
+
       // 리포트 데이터 생성
-      const data = generateWeeklyReportData(date);
+      const data = await generateWeeklyReportData(userId, date);
 
       if (!data) {
         setReportData(null);
@@ -39,7 +44,7 @@ export default function WeeklyReport() {
       setReportData(data);
 
       // 캐시된 인사이트 확인
-      const cached = getWeeklyReportCache(weekKey);
+      const cached = await getWeeklyReportCache(userId, weekKey);
 
       if (cached && cached.insight) {
         setInsight(cached.insight);
@@ -60,7 +65,7 @@ export default function WeeklyReport() {
         setGenerationTime(timeInSeconds);
 
         // 캐시에 저장
-        saveWeeklyReportCache(weekKey, {
+        await saveReportCache(userId, 'weekly', weekKey, {
           averageScore: data.average,
           insight: generatedInsight,
           generationTime: timeInSeconds

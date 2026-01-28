@@ -1,4 +1,4 @@
-import { getEmotions, getEmotionsByDateRange } from './storage';
+import { getEmotions, getEmotionsByDateRange } from './firebase/firestore';
 import {
   startOfWeek,
   endOfWeek,
@@ -14,14 +14,18 @@ import {
 
 /**
  * 주간 데이터 가져오기
+ * @param {string} userId - 사용자 ID
  * @param {Date} date - 기준 날짜
- * @returns {Array} 주간 감정 데이터
+ * @returns {Promise<Array>} 주간 감정 데이터
  */
-export function getWeeklyData(date = new Date()) {
+export async function getWeeklyData(userId, date = new Date()) {
   const start = startOfWeek(date, { weekStartsOn: 1 }); // 월요일 시작
   const end = endOfWeek(date, { weekStartsOn: 1 });
 
-  const emotions = getEmotionsByDateRange(start, end);
+  const startString = format(start, 'yyyy-MM-dd');
+  const endString = format(end, 'yyyy-MM-dd');
+
+  const emotions = await getEmotionsByDateRange(userId, startString, endString);
 
   // 날짜별로 정렬 (오래된 순)
   return emotions.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -29,14 +33,18 @@ export function getWeeklyData(date = new Date()) {
 
 /**
  * 월간 데이터 가져오기
+ * @param {string} userId - 사용자 ID
  * @param {Date} date - 기준 날짜
- * @returns {Array} 월간 감정 데이터
+ * @returns {Promise<Array>} 월간 감정 데이터
  */
-export function getMonthlyData(date = new Date()) {
+export async function getMonthlyData(userId, date = new Date()) {
   const start = startOfMonth(date);
   const end = endOfMonth(date);
 
-  const emotions = getEmotionsByDateRange(start, end);
+  const startString = format(start, 'yyyy-MM-dd');
+  const endString = format(end, 'yyyy-MM-dd');
+
+  const emotions = await getEmotionsByDateRange(userId, startString, endString);
 
   // 날짜별로 정렬 (오래된 순)
   return emotions.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -136,11 +144,12 @@ export function getDailyAverages(emotions) {
 
 /**
  * 주간 리포트 데이터 생성
+ * @param {string} userId - 사용자 ID
  * @param {Date} date - 기준 날짜
- * @returns {object} 주간 리포트 데이터
+ * @returns {Promise<object|null>} 주간 리포트 데이터
  */
-export function generateWeeklyReportData(date = new Date()) {
-  const emotions = getWeeklyData(date);
+export async function generateWeeklyReportData(userId, date = new Date()) {
+  const emotions = await getWeeklyData(userId, date);
 
   if (emotions.length === 0) {
     return null;
@@ -179,11 +188,12 @@ export function generateWeeklyReportData(date = new Date()) {
 
 /**
  * 월간 리포트 데이터 생성
+ * @param {string} userId - 사용자 ID
  * @param {Date} date - 기준 날짜
- * @returns {object} 월간 리포트 데이터
+ * @returns {Promise<object|null>} 월간 리포트 데이터
  */
-export function generateMonthlyReportData(date = new Date()) {
-  const emotions = getMonthlyData(date);
+export async function generateMonthlyReportData(userId, date = new Date()) {
+  const emotions = await getMonthlyData(userId, date);
 
   if (emotions.length === 0) {
     return null;

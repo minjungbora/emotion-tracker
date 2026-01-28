@@ -3,7 +3,8 @@ import { format, getYear, getMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { generateMonthlyReportData } from '../services/analytics';
 import { generateMonthlyInsight } from '../services/claude';
-import { getMonthlyReportCache, saveMonthlyReportCache } from '../services/storage';
+import { getMonthlyReportCache } from '../services/firebase/firestore';
+import { auth } from '../services/firebase/config';
 import { LineChartComponent, BarChartComponent } from './Chart';
 import './WeeklyReport.css'; // 공통 스타일 사용
 
@@ -22,12 +23,15 @@ export default function MonthlyReport() {
   }, [date]);
 
   const loadReport = async () => {
+    if (!auth.currentUser) return;
+
     setLoading(true);
     setError(null);
     setGenerationTime(null);
     setInsight('');
 
     try {
+      const userId = auth.currentUser.uid;
       const now = new Date();
       const currentYear = getYear(now);
       const currentMonth = getMonth(now) + 1; // 1-12
@@ -44,7 +48,7 @@ export default function MonthlyReport() {
       }
 
       // 이전 달인 경우 - 리포트 데이터 생성
-      const data = generateMonthlyReportData(date);
+      const data = await generateMonthlyReportData(userId, date);
 
       if (!data || data.totalRecords === 0) {
         setReportData(null);
@@ -56,7 +60,7 @@ export default function MonthlyReport() {
       setReportData(data);
 
       // 캐시된 인사이트 확인
-      const cached = getMonthlyReportCache(monthKey);
+      const cached = await getMonthlyReportCache(userId, monthKey);
 
       if (cached && cached.insight) {
         // 캐시에 있으면 표시

@@ -1,24 +1,40 @@
 import { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase/config';
-import { getSettings, saveSettings, exportAllData, clearAllData } from '../services/storage';
+import { getSettings, saveSettings, exportAllData, clearAllData } from '../services/firebase/firestore';
 import './Settings.css';
 
 export default function Settings() {
   const [settings, setSettings] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const current = getSettings();
-    setSettings(current);
+    loadSettings();
   }, []);
 
+  const loadSettings = async () => {
+    if (!auth.currentUser) return;
+
+    setLoading(true);
+    try {
+      const userId = auth.currentUser.uid;
+      const current = await getSettings(userId);
+      setSettings(current);
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleToggleNotifications = async () => {
-    if (!settings) return;
+    if (!settings || !auth.currentUser) return;
 
     setIsSaving(true);
     try {
-      const updated = saveSettings({
+      const userId = auth.currentUser.uid;
+      const updated = await saveSettings(userId, {
         notificationsEnabled: !settings.notificationsEnabled
       });
       setSettings(updated);
@@ -30,30 +46,54 @@ export default function Settings() {
     }
   };
 
-  const handleTimeChange = (e) => {
+  const handleTimeChange = async (e) => {
+    if (!auth.currentUser) return;
+
     const newTime = e.target.value;
-    const updated = saveSettings({
-      notificationTime: newTime
-    });
-    setSettings(updated);
+    try {
+      const userId = auth.currentUser.uid;
+      const updated = await saveSettings(userId, {
+        notificationTime: newTime
+      });
+      setSettings(updated);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      alert('설정 저장에 실패했습니다.');
+    }
   };
 
-  const handleExport = () => {
-    const data = exportAllData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `emotion-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    if (!auth.currentUser) return;
+
+    try {
+      const userId = auth.currentUser.uid;
+      const data = await exportAllData(userId);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `emotion-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('데이터 내보내기에 실패했습니다.');
+    }
   };
 
-  const handleClearData = () => {
+  const handleClearData = async () => {
+    if (!auth.currentUser) return;
+
     if (confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      clearAllData();
-      alert('모든 데이터가 삭제되었습니다.');
-      window.location.reload();
+      try {
+        const userId = auth.currentUser.uid;
+        await clearAllData(userId);
+        alert('모든 데이터가 삭제되었습니다.');
+        window.location.reload();
+      } catch (error) {
+        console.error('Error clearing data:', error);
+        alert('데이터 삭제에 실패했습니다.');
+      }
     }
   };
 
@@ -69,7 +109,7 @@ export default function Settings() {
     }
   };
 
-  if (!settings) {
+  if (loading || !settings) {
     return <div className="loading">로딩 중...</div>;
   }
 

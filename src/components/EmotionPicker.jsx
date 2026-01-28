@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { saveEmotion } from '../services/storage';
+import { saveEmotion } from '../services/firebase/firestore';
+import { auth } from '../services/firebase/config';
 import './EmotionPicker.css';
 
 const EMOTION_LABELS = {
@@ -29,9 +30,15 @@ export default function EmotionPicker({ initialEmotion, onSaved }) {
       return;
     }
 
+    if (!auth.currentUser) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const saved = saveEmotion(selectedScore, note);
+      const userId = auth.currentUser.uid;
+      const saved = await saveEmotion(userId, selectedScore, note);
       if (onSaved) {
         onSaved(saved);
       }

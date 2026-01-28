@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getTodayEmotion, getEmotions } from '../services/storage';
+import { getEmotionByDate, getEmotions } from '../services/firebase/firestore';
+import { auth } from '../services/firebase/config';
 import EmotionPicker from '../components/EmotionPicker';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -24,13 +25,26 @@ const EMOTION_LABELS = {
 export default function Home() {
   const [todayEmotion, setTodayEmotion] = useState(null);
   const [recentEmotions, setRecentEmotions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const loadData = () => {
-    const today = getTodayEmotion();
-    setTodayEmotion(today);
+  const loadData = async () => {
+    if (!auth.currentUser) return;
 
-    const all = getEmotions();
-    setRecentEmotions(all.slice(0, 7));
+    setLoading(true);
+    try {
+      const userId = auth.currentUser.uid;
+      const todayString = new Date().toISOString().split('T')[0];
+
+      const today = await getEmotionByDate(userId, todayString);
+      setTodayEmotion(today);
+
+      const all = await getEmotions(userId);
+      setRecentEmotions(all.slice(0, 7));
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -40,6 +54,14 @@ export default function Home() {
   const handleSaved = () => {
     loadData();
   };
+
+  if (loading) {
+    return (
+      <div className="home-page">
+        <div className="loading">로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="home-page">
