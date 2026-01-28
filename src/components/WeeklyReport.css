@@ -154,6 +154,15 @@
   color: #ef4444;
 }
 
+.generation-time {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-align: right;
+}
+
 /* 모바일 반응형 */
 @media (max-width: 640px) {
   .report-card {

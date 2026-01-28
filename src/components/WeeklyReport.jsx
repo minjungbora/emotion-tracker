@@ -13,6 +13,7 @@ export default function WeeklyReport() {
   const [insight, setInsight] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [generationTime, setGenerationTime] = useState(null);
 
   const weekKey = `${getYear(date)}-W${String(getWeek(date, { weekStartsOn: 1 })).padStart(2, '0')}`;
 
@@ -23,6 +24,7 @@ export default function WeeklyReport() {
   const loadReport = async () => {
     setLoading(true);
     setError(null);
+    setGenerationTime(null);
 
     try {
       // 리포트 데이터 생성
@@ -41,16 +43,27 @@ export default function WeeklyReport() {
 
       if (cached && cached.insight) {
         setInsight(cached.insight);
+        if (cached.generationTime) {
+          setGenerationTime(cached.generationTime);
+        }
       } else {
         // Claude API로 인사이트 생성
         setInsight('AI 인사이트를 생성하는 중...');
+        const startTime = Date.now();
+
         const generatedInsight = await generateWeeklyInsight(data.emotions, data.average);
+
+        const endTime = Date.now();
+        const timeInSeconds = ((endTime - startTime) / 1000).toFixed(1);
+
         setInsight(generatedInsight);
+        setGenerationTime(timeInSeconds);
 
         // 캐시에 저장
         saveWeeklyReportCache(weekKey, {
           averageScore: data.average,
-          insight: generatedInsight
+          insight: generatedInsight,
+          generationTime: timeInSeconds
         });
       }
     } catch (err) {
@@ -135,7 +148,14 @@ export default function WeeklyReport() {
               ) : error ? (
                 <p className="error-text">{error}</p>
               ) : (
-                <p>{insight}</p>
+                <>
+                  <p>{insight}</p>
+                  {generationTime && (
+                    <div className="generation-time">
+                      ⏱️ AI 분석 완료 ({generationTime}초 소요)
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
