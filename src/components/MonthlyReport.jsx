@@ -25,14 +25,31 @@ export default function MonthlyReport() {
     setLoading(true);
     setError(null);
     setGenerationTime(null);
+    setInsight('');
 
     try {
-      // 리포트 데이터 생성
-      const data = generateMonthlyReportData(date);
+      const now = new Date();
+      const currentYear = getYear(now);
+      const currentMonth = getMonth(now) + 1; // 1-12
+      const selectedYear = getYear(date);
+      const selectedMonth = getMonth(date) + 1;
 
-      if (!data) {
+      // 현재 달이거나 미래 달인 경우
+      if (selectedYear > currentYear ||
+          (selectedYear === currentYear && selectedMonth >= currentMonth)) {
         setReportData(null);
         setInsight('');
+        setError('not-ready');
+        return;
+      }
+
+      // 이전 달인 경우 - 리포트 데이터 생성
+      const data = generateMonthlyReportData(date);
+
+      if (!data || data.totalRecords === 0) {
+        setReportData(null);
+        setInsight('');
+        setError('no-data');
         return;
       }
 
@@ -42,34 +59,15 @@ export default function MonthlyReport() {
       const cached = getMonthlyReportCache(monthKey);
 
       if (cached && cached.insight) {
+        // 캐시에 있으면 표시
         setInsight(cached.insight);
         if (cached.generationTime) {
           setGenerationTime(cached.generationTime);
         }
       } else {
-        // Claude API로 인사이트 생성
-        setInsight('AI 인사이트를 생성하는 중...');
-        const startTime = Date.now();
-
-        const generatedInsight = await generateMonthlyInsight(
-          data.emotions,
-          data.average,
-          data.weeklyAverages,
-          data.dailyAverages
-        );
-
-        const endTime = Date.now();
-        const timeInSeconds = ((endTime - startTime) / 1000).toFixed(1);
-
-        setInsight(generatedInsight);
-        setGenerationTime(timeInSeconds);
-
-        // 캐시에 저장
-        saveMonthlyReportCache(monthKey, {
-          averageScore: data.average,
-          insight: generatedInsight,
-          generationTime: timeInSeconds
-        });
+        // 캐시에 없으면 안내 메시지
+        setInsight('');
+        setError('not-generated');
       }
     } catch (err) {
       console.error('Error loading monthly report:', err);
@@ -81,6 +79,26 @@ export default function MonthlyReport() {
 
   if (loading) {
     return <div className="report-loading">로딩 중...</div>;
+  }
+
+  // 현재 달이거나 미래 달인 경우
+  if (error === 'not-ready') {
+    return (
+      <div className="report-empty">
+        <h2>아직 리포트가 준비되지 않았어요</h2>
+        <p>이전 달의 리포트만 확인할 수 있습니다.</p>
+      </div>
+    );
+  }
+
+  // 데이터가 없는 경우
+  if (error === 'no-data') {
+    return (
+      <div className="report-empty">
+        <h2>이번 달 감정 기록이 없습니다</h2>
+        <p>매일 감정을 기록하면 월간 리포트를 볼 수 있어요!</p>
+      </div>
+    );
   }
 
   if (!reportData) {
@@ -161,17 +179,20 @@ export default function MonthlyReport() {
           />
         </div>
 
-        {insight && (
+        {(insight || error === 'not-generated') && (
           <div className="insight-card">
             <h3>📝 AI 인사이트</h3>
             <div className="insight-content">
-              {insight === 'AI 인사이트를 생성하는 중...' ? (
+              {error === 'not-generated' ? (
+                <p className="info-text">
+                  아직 인사이트가 생성되기에 데이터가 충분하지 않아요.
+                  다음 달 1일 저녁 10시에 다시 확인해주세요.
+                </p>
+              ) : insight === 'AI 인사이트를 생성하는 중...' ? (
                 <div className="insight-loading">
                   <span className="loading-spinner">⏳</span>
                   {insight}
                 </div>
-              ) : error ? (
-                <p className="error-text">{error}</p>
               ) : (
                 <>
                   <p>{insight}</p>

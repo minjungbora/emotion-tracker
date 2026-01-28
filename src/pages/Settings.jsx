@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { signOut } from 'firebase/auth';
+import { auth } from '../services/firebase/config';
 import { getSettings, saveSettings, exportAllData, clearAllData } from '../services/storage';
 import './Settings.css';
 
@@ -52,6 +54,18 @@ export default function Settings() {
       clearAllData();
       alert('모든 데이터가 삭제되었습니다.');
       window.location.reload();
+    }
+  };
+
+  const handleLogout = async () => {
+    if (confirm('로그아웃하시겠습니까?')) {
+      try {
+        await signOut(auth);
+        // 로그아웃 후 자동으로 로그인 화면으로 이동 (App.jsx에서 처리)
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('로그아웃에 실패했습니다.');
+      }
     }
   };
 
@@ -130,6 +144,21 @@ export default function Settings() {
         </section>
 
         <section className="settings-section">
+          <h2>계정</h2>
+          <div className="settings-item">
+            <div className="settings-item-info">
+              <div className="settings-item-title">로그아웃</div>
+              <div className="settings-item-description">
+                현재 계정에서 로그아웃합니다
+              </div>
+            </div>
+            <button className="action-button" onClick={handleLogout}>
+              로그아웃
+            </button>
+          </div>
+        </section>
+
+        <section className="settings-section">
           <h2>앱 정보</h2>
           <div className="info-item">
             <div className="info-label">버전</div>
@@ -138,6 +167,10 @@ export default function Settings() {
           <div className="info-item">
             <div className="info-label">개발자</div>
             <div className="info-value">Emotion Tracker</div>
+          </div>
+          <div className="info-item">
+            <div className="info-label">이메일</div>
+            <div className="info-value">{auth.currentUser?.email || '-'}</div>
           </div>
         </section>
       </main>
