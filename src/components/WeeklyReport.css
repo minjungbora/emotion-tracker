@@ -1,0 +1,175 @@
+.weekly-report,
+.monthly-report {
+  padding: 1rem 0;
+}
+
+.report-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.report-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.report-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.report-date-range {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.report-summary {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.trend-card {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border-left: 4px solid;
+}
+
+.trend-card.improving {
+  background: #d1fae5;
+  border-color: #10b981;
+}
+
+.trend-card.declining {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+.trend-card.stable {
+  background: #e0e7ff;
+  border-color: #6366f1;
+}
+
+.trend-message {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.report-chart {
+  margin: 2rem 0;
+}
+
+.insight-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.insight-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.insight-content {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #4b5563;
+  white-space: pre-wrap;
+}
+
+.insight-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.report-loading,
+.report-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.report-loading {
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+.report-empty h2 {
+  font-size: 1.25rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.report-empty p {
+  color: #6b7280;
+}
+
+.error-text {
+  color: #ef4444;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 640px) {
+  .report-card {
+    padding: 1.5rem;
+  }
+
+  .report-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .report-summary {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+  }
+}

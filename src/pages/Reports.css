@@ -1,0 +1,64 @@
+.reports-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+}
+
+.reports-header {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: white;
+}
+
+.reports-header h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.tab-button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tab-button.active {
+  background: white;
+  color: #667eea;
+}
+
+.reports-main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 640px) {
+  .reports-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .tab-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tab-button {
+    width: 100%;
+  }
+}

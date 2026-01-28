@@ -1,0 +1,162 @@
+.emotion-picker {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.emotion-picker-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.emotion-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.emotion-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emotion-button:hover:not(:disabled) {
+  border-color: #6366f1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+}
+
+.emotion-button.selected {
+  border-color: #6366f1;
+  background: #eef2ff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.emotion-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.emotion-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.emotion-score {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #6366f1;
+  margin-bottom: 0.25rem;
+}
+
+.emotion-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.emotion-note {
+  margin-bottom: 1.5rem;
+}
+
+.emotion-note label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.emotion-note textarea {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.emotion-note textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.emotion-note textarea:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+.note-counter {
+  text-align: right;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.save-button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  background: #6366f1;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-button:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.save-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 640px) {
+  .emotion-picker {
+    padding: 1rem;
+  }
+
+  .emotion-picker-title {
+    font-size: 1.25rem;
+  }
+
+  .emotion-scale {
+    gap: 0.25rem;
+  }
+
+  .emotion-button {
+    padding: 0.75rem 0.25rem;
+  }
+
+  .emotion-emoji {
+    font-size: 2rem;
+  }
+
+  .emotion-score {
+    font-size: 1rem;
+  }
+
+  .emotion-label {
+    font-size: 0.65rem;
+  }
+}

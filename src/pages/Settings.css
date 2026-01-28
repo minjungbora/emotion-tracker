@@ -1,0 +1,174 @@
+.settings-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+}
+
+.settings-header {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: white;
+}
+
+.settings-header h1 {
+  font-size: 2rem;
+}
+
+.settings-main {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.settings-section {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item-info {
+  flex: 1;
+}
+
+.settings-item-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.settings-item-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.toggle-button {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: #e5e7eb;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-button.active {
+  background: #10b981;
+  color: white;
+}
+
+.toggle-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.time-input {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.time-input:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.action-button {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: #6366f1;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-button:hover {
+  background: #4f46e5;
+}
+
+.action-button.danger {
+  background: #ef4444;
+}
+
+.action-button.danger:hover {
+  background: #dc2626;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.info-value {
+  color: #333;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 1.25rem;
+  color: white;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 640px) {
+  .settings-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .settings-section {
+    padding: 1.5rem;
+  }
+
+  .settings-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .toggle-button,
+  .action-button,
+  .time-input {
+    width: 100%;
+  }
+}

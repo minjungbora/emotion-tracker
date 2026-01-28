@@ -1,0 +1,18 @@
+{
+  "name": "감정 추적",
+  "short_name": "감정 추적",
+  "description": "매일 감정을 기록하고 AI 인사이트를 받아보세요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

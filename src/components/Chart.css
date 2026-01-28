@@ -1,0 +1,29 @@
+.chart-container {
+  margin: 1.5rem 0;
+}
+
+.chart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Recharts 커스텀 스타일 */
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.recharts-default-tooltip {
+  background: white !important;
+  border: 2px solid #6366f1 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 640px) {
+  .chart-title {
+    font-size: 1rem;
+  }
+}
