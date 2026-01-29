@@ -55,30 +55,15 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  const loadData = async () => {
-    if (!auth.currentUser) return;
+  const handleSaved = (savedEmotion) => {
+    // 서버에서 다시 가져오지 않고 로컬 state만 업데이트
+    setTodayEmotion(savedEmotion);
 
-    setLoading(true);
-    try {
-      const userId = auth.currentUser.uid;
-      const todayString = new Date().toISOString().split('T')[0];
-
-      const [today, recent] = await Promise.all([
-        getEmotionByDate(userId, todayString),
-        getEmotions(userId, 7)
-      ]);
-
-      setTodayEmotion(today);
-      setRecentEmotions(recent);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaved = () => {
-    loadData();
+    // 최근 리스트 업데이트 (오늘 데이터 추가/갱신)
+    setRecentEmotions(prev => {
+      const filtered = prev.filter(e => e.date !== savedEmotion.date);
+      return [savedEmotion, ...filtered].slice(0, 7);
+    });
   };
 
   if (loading) {
