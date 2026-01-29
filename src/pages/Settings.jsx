@@ -21,12 +21,33 @@ export default function Settings() {
   const loadSettings = async () => {
     if (!auth.currentUser) return;
 
+    const userId = auth.currentUser.uid;
+
+    // 먼저 로컬스토리지에서 로드 (즉시 표시)
+    const localKey = `settings_${userId}`;
+    const localData = localStorage.getItem(localKey);
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        setSettings(parsed);
+      } catch (e) {
+        console.error('Error parsing local settings:', e);
+      }
+    }
+
+    // 백그라운드에서 Firebase 시도 (2초 타임아웃)
     try {
-      const userId = auth.currentUser.uid;
-      const current = await getSettings(userId);
+      const current = await Promise.race([
+        getSettings(userId),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 2000)
+        )
+      ]);
       setSettings(current);
+      // Firebase 성공 시 로컬스토리지 업데이트
+      localStorage.setItem(localKey, JSON.stringify(current));
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.log('Firebase settings load failed (using local):', error.message);
     } finally {
       setLoading(false);
     }
@@ -36,17 +57,31 @@ export default function Settings() {
     if (!settings || !auth.currentUser) return;
 
     setIsSaving(true);
+    const userId = auth.currentUser.uid;
+    const updated = {
+      ...settings,
+      notificationsEnabled: !settings.notificationsEnabled
+    };
+
+    // 즉시 로컬 저장 및 UI 업데이트
+    const localKey = `settings_${userId}`;
+    localStorage.setItem(localKey, JSON.stringify(updated));
+    setSettings(updated);
+    setIsSaving(false);
+
+    // 백그라운드에서 Firebase 동기화
     try {
-      const userId = auth.currentUser.uid;
-      const updated = await saveSettings(userId, {
-        notificationsEnabled: !settings.notificationsEnabled
-      });
-      setSettings(updated);
+      await Promise.race([
+        saveSettings(userId, {
+          notificationsEnabled: updated.notificationsEnabled
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 2000)
+        )
+      ]);
+      console.log('Settings synced to Firebase');
     } catch (error) {
-      console.error('Error updating settings:', error);
-      alert('설정 저장에 실패했습니다.');
-    } finally {
-      setIsSaving(false);
+      console.log('Firebase settings sync failed (saved locally):', error.message);
     }
   };
 
@@ -54,15 +89,30 @@ export default function Settings() {
     if (!auth.currentUser) return;
 
     const newTime = e.target.value;
+    const userId = auth.currentUser.uid;
+    const updated = {
+      ...settings,
+      notificationTime: newTime
+    };
+
+    // 즉시 로컬 저장 및 UI 업데이트
+    const localKey = `settings_${userId}`;
+    localStorage.setItem(localKey, JSON.stringify(updated));
+    setSettings(updated);
+
+    // 백그라운드에서 Firebase 동기화
     try {
-      const userId = auth.currentUser.uid;
-      const updated = await saveSettings(userId, {
-        notificationTime: newTime
-      });
-      setSettings(updated);
+      await Promise.race([
+        saveSettings(userId, {
+          notificationTime: newTime
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 2000)
+        )
+      ]);
+      console.log('Settings synced to Firebase');
     } catch (error) {
-      console.error('Error updating settings:', error);
-      alert('설정 저장에 실패했습니다.');
+      console.log('Firebase settings sync failed (saved locally):', error.message);
     }
   };
 
