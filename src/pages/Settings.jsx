@@ -5,7 +5,12 @@ import { getSettings, saveSettings, exportAllData, clearAllData } from '../servi
 import './Settings.css';
 
 export default function Settings() {
-  const [settings, setSettings] = useState(null);
+  // 기본값을 먼저 표시 (로딩 시간 단축)
+  const [settings, setSettings] = useState({
+    notificationsEnabled: false,
+    notificationTime: '22:00',
+    pushSubscription: null
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -16,7 +21,6 @@ export default function Settings() {
   const loadSettings = async () => {
     if (!auth.currentUser) return;
 
-    setLoading(true);
     try {
       const userId = auth.currentUser.uid;
       const current = await getSettings(userId);
@@ -109,9 +113,7 @@ export default function Settings() {
     }
   };
 
-  if (loading || !settings) {
-    return <div className="loading">로딩 중...</div>;
-  }
+  // 기본값을 먼저 표시하므로 로딩 화면 제거
 
   return (
     <div className="settings-page">

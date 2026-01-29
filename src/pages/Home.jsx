@@ -25,7 +25,7 @@ const EMOTION_LABELS = {
 export default function Home() {
   const [todayEmotion, setTodayEmotion] = useState(null);
   const [recentEmotions, setRecentEmotions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // 즉시 UI 표시
 
   const loadData = async () => {
     if (!auth.currentUser) return;
