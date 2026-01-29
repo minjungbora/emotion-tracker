@@ -30,25 +30,46 @@ export default function Home() {
   useEffect(() => {
     // Firebase Auth 상태 변화를 기다림
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       try {
         const userId = user.uid;
         const todayString = new Date().toISOString().split('T')[0];
 
-        // 병렬로 데이터 가져오기
-        const [today, recent] = await Promise.all([
+        // 오늘 데이터만 먼저 빠르게 로드
+        const today = await Promise.race([
           getEmotionByDate(userId, todayString),
-          getEmotions(userId, 7) // 최근 7개만
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+          )
         ]);
 
         setTodayEmotion(today);
-        setRecentEmotions(recent);
+        setLoading(false);
+
+        // 최근 데이터는 백그라운드에서 로드 (3개로 제한)
+        try {
+          const recent = await Promise.race([
+            getEmotions(userId, 3),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Timeout')), 5000)
+            )
+          ]);
+          setRecentEmotions(recent);
+        } catch (bgError) {
+          console.log('Background loading failed:', bgError);
+          // 실패해도 괜찮음 - 오늘 데이터는 이미 보여줌
+        }
       } catch (error) {
         console.error('Error loading data:', error);
-      } finally {
         setLoading(false);
+        // 에러 발생 시 빈 상태로 표시
+        setTodayEmotion(null);
+        setRecentEmotions([]);
       }
     });
 
@@ -62,7 +83,7 @@ export default function Home() {
     // 최근 리스트 업데이트 (오늘 데이터 추가/갱신)
     setRecentEmotions(prev => {
       const filtered = prev.filter(e => e.date !== savedEmotion.date);
-      return [savedEmotion, ...filtered].slice(0, 7);
+      return [savedEmotion, ...filtered].slice(0, 3);
     });
   };
 
@@ -111,7 +132,7 @@ export default function Home() {
         </section>
 
         <section className="recent-section">
-          <h2>최근 7일</h2>
+          <h2>최근 3일</h2>
           {recentEmotions.length === 0 ? (
             <div className="empty-state">
               <p>아직 감정 기록이 없습니다.</p>
