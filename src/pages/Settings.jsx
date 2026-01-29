@@ -1,120 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase/config';
-import { getSettings, saveSettings, exportAllData, clearAllData } from '../services/firebase/firestore';
+import { exportAllData, clearAllData } from '../services/firebase/firestore';
 import './Settings.css';
 
 export default function Settings() {
-  // 기본값을 먼저 표시 (로딩 시간 단축)
-  const [settings, setSettings] = useState({
-    notificationsEnabled: false,
-    notificationTime: '22:00',
-    pushSubscription: null
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    if (!auth.currentUser) return;
-
-    const userId = auth.currentUser.uid;
-
-    // 먼저 로컬스토리지에서 로드 (즉시 표시)
-    const localKey = `settings_${userId}`;
-    const localData = localStorage.getItem(localKey);
-    if (localData) {
-      try {
-        const parsed = JSON.parse(localData);
-        setSettings(parsed);
-      } catch (e) {
-        console.error('Error parsing local settings:', e);
-      }
-    }
-
-    // 백그라운드에서 Firebase 시도 (2초 타임아웃)
-    try {
-      const current = await Promise.race([
-        getSettings(userId),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout')), 2000)
-        )
-      ]);
-      setSettings(current);
-      // Firebase 성공 시 로컬스토리지 업데이트
-      localStorage.setItem(localKey, JSON.stringify(current));
-    } catch (error) {
-      console.log('Firebase settings load failed (using local):', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleNotifications = async () => {
-    if (!settings || !auth.currentUser) return;
-
-    setIsSaving(true);
-    const userId = auth.currentUser.uid;
-    const updated = {
-      ...settings,
-      notificationsEnabled: !settings.notificationsEnabled
-    };
-
-    // 즉시 로컬 저장 및 UI 업데이트
-    const localKey = `settings_${userId}`;
-    localStorage.setItem(localKey, JSON.stringify(updated));
-    setSettings(updated);
-    setIsSaving(false);
-
-    // 백그라운드에서 Firebase 동기화
-    try {
-      await Promise.race([
-        saveSettings(userId, {
-          notificationsEnabled: updated.notificationsEnabled
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout')), 2000)
-        )
-      ]);
-      console.log('Settings synced to Firebase');
-    } catch (error) {
-      console.log('Firebase settings sync failed (saved locally):', error.message);
-    }
-  };
-
-  const handleTimeChange = async (e) => {
-    if (!auth.currentUser) return;
-
-    const newTime = e.target.value;
-    const userId = auth.currentUser.uid;
-    const updated = {
-      ...settings,
-      notificationTime: newTime
-    };
-
-    // 즉시 로컬 저장 및 UI 업데이트
-    const localKey = `settings_${userId}`;
-    localStorage.setItem(localKey, JSON.stringify(updated));
-    setSettings(updated);
-
-    // 백그라운드에서 Firebase 동기화
-    try {
-      await Promise.race([
-        saveSettings(userId, {
-          notificationTime: newTime
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout')), 2000)
-        )
-      ]);
-      console.log('Settings synced to Firebase');
-    } catch (error) {
-      console.log('Firebase settings sync failed (saved locally):', error.message);
-    }
-  };
 
   const handleExport = async () => {
     if (!auth.currentUser) return;
@@ -163,8 +53,6 @@ export default function Settings() {
     }
   };
 
-  // 기본값을 먼저 표시하므로 로딩 화면 제거
-
   return (
     <div className="settings-page">
       <header className="settings-header">
@@ -172,42 +60,6 @@ export default function Settings() {
       </header>
 
       <main className="settings-main">
-        <section className="settings-section">
-          <h2>알림 설정</h2>
-          <div className="settings-item">
-            <div className="settings-item-info">
-              <div className="settings-item-title">푸시 알림</div>
-              <div className="settings-item-description">
-                매일 설정한 시간에 알림을 받습니다
-              </div>
-            </div>
-            <button
-              className={`toggle-button ${settings.notificationsEnabled ? 'active' : ''}`}
-              onClick={handleToggleNotifications}
-              disabled={isSaving}
-            >
-              {settings.notificationsEnabled ? 'ON' : 'OFF'}
-            </button>
-          </div>
-
-          {settings.notificationsEnabled && (
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">알림 시간</div>
-                <div className="settings-item-description">
-                  감정 기록 알림을 받을 시간을 설정하세요
-                </div>
-              </div>
-              <input
-                type="time"
-                value={settings.notificationTime}
-                onChange={handleTimeChange}
-                className="time-input"
-              />
-            </div>
-          )}
-        </section>
-
         <section className="settings-section">
           <h2>데이터 관리</h2>
           <div className="settings-item">
