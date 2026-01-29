@@ -25,7 +25,35 @@ const EMOTION_LABELS = {
 export default function Home() {
   const [todayEmotion, setTodayEmotion] = useState(null);
   const [recentEmotions, setRecentEmotions] = useState([]);
-  const [loading, setLoading] = useState(false); // 즉시 UI 표시
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Firebase Auth 상태 변화를 기다림
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) return;
+
+      setLoading(true);
+      try {
+        const userId = user.uid;
+        const todayString = new Date().toISOString().split('T')[0];
+
+        // 병렬로 데이터 가져오기
+        const [today, recent] = await Promise.all([
+          getEmotionByDate(userId, todayString),
+          getEmotions(userId, 7) // 최근 7개만
+        ]);
+
+        setTodayEmotion(today);
+        setRecentEmotions(recent);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const loadData = async () => {
     if (!auth.currentUser) return;
@@ -35,10 +63,9 @@ export default function Home() {
       const userId = auth.currentUser.uid;
       const todayString = new Date().toISOString().split('T')[0];
 
-      // 병렬로 데이터 가져오기
       const [today, recent] = await Promise.all([
         getEmotionByDate(userId, todayString),
-        getEmotions(userId, 7) // 최근 7개만
+        getEmotions(userId, 7)
       ]);
 
       setTodayEmotion(today);
@@ -49,10 +76,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const handleSaved = () => {
     loadData();
