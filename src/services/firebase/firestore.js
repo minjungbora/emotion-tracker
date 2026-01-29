@@ -7,6 +7,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   deleteDoc,
   Timestamp
 } from 'firebase/firestore';
@@ -63,12 +64,18 @@ export async function getEmotionByDate(userId, dateString) {
 /**
  * 모든 감정 가져오기
  * @param {string} userId - 사용자 ID
+ * @param {number} limitCount - 가져올 개수 (선택, 기본값 없음)
  */
-export async function getEmotions(userId) {
+export async function getEmotions(userId, limitCount = null) {
   if (!userId) throw new Error('User ID is required');
 
   const emotionsRef = collection(db, 'users', userId, 'emotions');
-  const q = query(emotionsRef, orderBy('date', 'desc'));
+  let q = query(emotionsRef, orderBy('date', 'desc'));
+
+  if (limitCount) {
+    q = query(emotionsRef, orderBy('date', 'desc'), limit(limitCount));
+  }
+
   const querySnapshot = await getDocs(q);
 
   return querySnapshot.docs.map(doc => ({

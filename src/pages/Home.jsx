@@ -35,11 +35,14 @@ export default function Home() {
       const userId = auth.currentUser.uid;
       const todayString = new Date().toISOString().split('T')[0];
 
-      const today = await getEmotionByDate(userId, todayString);
-      setTodayEmotion(today);
+      // 병렬로 데이터 가져오기
+      const [today, recent] = await Promise.all([
+        getEmotionByDate(userId, todayString),
+        getEmotions(userId, 7) // 최근 7개만
+      ]);
 
-      const all = await getEmotions(userId);
-      setRecentEmotions(all.slice(0, 7));
+      setTodayEmotion(today);
+      setRecentEmotions(recent);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
