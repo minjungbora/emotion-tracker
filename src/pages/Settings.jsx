@@ -208,11 +208,7 @@ export default function Settings() {
           </div>
           <div className="info-item">
             <div className="info-label">개발자</div>
-            <div className="info-value">Emotion Tracker</div>
-          </div>
-          <div className="info-item">
-            <div className="info-label">이메일</div>
-            <div className="info-value">{auth.currentUser?.email || '-'}</div>
+            <div className="info-value">최춘식</div>
           </div>
         </section>
       </main>
