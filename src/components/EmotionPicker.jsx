@@ -38,14 +38,44 @@ export default function EmotionPicker({ initialEmotion, onSaved }) {
     setIsSaving(true);
     try {
       const userId = auth.currentUser.uid;
-      const saved = await saveEmotion(userId, selectedScore, note);
+      const today = new Date();
+      const dateString = today.toISOString().split('T')[0];
+
+      // 로컬 저장 객체 생성
+      const emotionData = {
+        id: dateString,
+        score: selectedScore,
+        date: dateString,
+        timestamp: Date.now(),
+        note: note.trim()
+      };
+
+      // 즉시 로컬스토리지에 저장 (폴백용)
+      const localKey = `emotion_${userId}_${dateString}`;
+      localStorage.setItem(localKey, JSON.stringify(emotionData));
+
+      // 즉시 UI 업데이트
       if (onSaved) {
-        onSaved(saved);
+        onSaved(emotionData);
+      }
+      setIsSaving(false);
+
+      // 백그라운드에서 Firebase에 저장 시도 (2초 타임아웃)
+      try {
+        await Promise.race([
+          saveEmotion(userId, selectedScore, note),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 2000)
+          )
+        ]);
+        console.log('Firebase sync success');
+      } catch (syncError) {
+        console.log('Firebase sync failed (saved locally):', syncError.message);
+        // 실패해도 로컬에 이미 저장되어 있으므로 괜찮음
       }
     } catch (error) {
       console.error('Error saving emotion:', error);
       alert('저장에 실패했습니다. 다시 시도해주세요.');
-    } finally {
       setIsSaving(false);
     }
   };

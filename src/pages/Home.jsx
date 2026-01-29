@@ -46,19 +46,30 @@ export default function Home() {
     try {
       const todayString = new Date().toISOString().split('T')[0];
 
-      // 2초 타임아웃으로 오늘 데이터만 시도
-      const today = await Promise.race([
-        getEmotionByDate(userId, todayString),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout')), 2000)
-        )
-      ]);
+      // 먼저 로컬스토리지 확인 (즉시 표시)
+      const localKey = `emotion_${userId}_${todayString}`;
+      const localData = localStorage.getItem(localKey);
+      if (localData) {
+        const parsed = JSON.parse(localData);
+        setTodayEmotion(parsed);
+      }
 
-      if (today) {
-        setTodayEmotion(today);
+      // 백그라운드에서 Firebase 시도 (2초 타임아웃)
+      try {
+        const today = await Promise.race([
+          getEmotionByDate(userId, todayString),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 2000)
+          )
+        ]);
+
+        if (today) {
+          setTodayEmotion(today);
+        }
+      } catch (fbError) {
+        console.log('Firebase load failed (using local):', fbError.message);
       }
     } catch (error) {
-      // 실패해도 조용히 무시 - 빈 화면 표시
       console.log('Failed to load today data:', error.message);
     }
   };
